@@ -21,6 +21,90 @@ public class CreateTerrain : MonoBehaviour {
     private int extraRoughFlag  = 0x8;
 
 
+    void MakeNewTerrainTile(Area type, int x, int y)
+    {
+        int curFlag;
+        Area curType;
+        string curName;
+        string curTag;
+        
+        
+        switch(type){
+            case Area.GREEN:
+                curFlag = roughFlag;
+                curType = Area.ROUGH;
+                curName = "RoughTerrainTile";
+                curTag = "Rough";
+                break;
+            case Area.FAIRWAY:
+                curFlag = fairwayFlag;
+                curType = Area.FAIRWAY;
+                curName = "fairwayTerrainTile";
+                curTag = "Fairway";
+                break;
+            case Area.ROUGH
+                curFlag = roughFlag;
+                curType = Area.ROUGH;
+                curName = "RoughTerrainTile";
+                curTag = "Rough";
+                break;
+            case Area.EXTRA_ROUGH
+                curFlag = extraRoughFlag;
+                curType = Area.EXTRA_ROUGH;
+                curName = "ExtraRoughTerrainTile";
+                curTag = "ExtraRough";
+                break;
+            default:
+                curFlag = extraRoughFlag;
+                curType = Area.EXTRA_ROUGH;
+                curName = "ExtraRoughTerrainTile";
+                curTag = "ExtraRough";
+            
+        }
+
+        // Set heightmap values
+        for (int j = 0; j < tileSize + 1; j++)
+        {
+            for (int i = 0; i < tileSize + 1; i++)
+            {
+                // If this is our terrain...
+                if (groundmap[(tileSize * x) + i, (tileSize * y) + j] == curType)
+                {
+                    // Set to heightmap
+                    curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i];
+                }
+                else
+                {
+                    // Else, this terrain gets tucked under the actual terrain
+                    curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i] - overlapHeight;
+                }
+            }
+        }    
+
+        // Make the terrain object
+        curData = new TerrainData();
+        curData.name = "" + x + "x" + y + "y";
+        curData.size = new Vector3(tileSize, heightScale, tileSize);
+
+        curObject = Terrain.CreateTerrainGameObject(curData);
+        curTerr = curObject.GetComponent<Terrain>();
+
+        curObject.transform.position = new Vector3((x * tileSize), 0, (y * tileSize));
+        curData.SetHeights(0, 0, curHeights);
+
+        curTerr.transform.parent = gameObject.transform;
+        curTerr.editorRenderFlags = (TerrainRenderFlags)0;
+        curTerr.castShadows = false;
+
+        // Set names and tags
+        curObject.name = curName;
+        curObject.tag = curTag;
+        curObject.layer = LayerMask.NameToLayer("Ground");
+
+        return;
+    }
+        
+    
     public void MakeTerrain(float[,] heightmap, Area[,] groundmap, int height, int width)
     {
         // Make an array of boolean flags, and set all to 0 
@@ -78,187 +162,19 @@ public class CreateTerrain : MonoBehaviour {
                 
                 // Create all the terrain types that exist in this area
                 if ((curFlags & greenFlag) > 0)
-                {
-                    // Set heightmap values
-                    for (int j = 0; j < tileSize + 1; j++)
-                    {
-                        for (int i = 0; i < tileSize + 1; i++)
-                        {
-                            // If this is our terrain...
-                            if (groundmap[(tileSize * x) + i, (tileSize * y) + j] == Area.GREEN)
-                            {
-                                // Set to heightmap
-                                curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i];
-                            }
-                            else
-                            {
-                                // Else, this terrain gets tucked under the actual terrain
-                                curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i] - overlapHeight;
-                            }
-
-                        }
-                    }
-
-                    // Make the terrain object
-                    curData = new TerrainData();
-                    curData.name = "" + x + "x" + y + "y";
-                    curData.size = new Vector3(tileSize, heightScale, tileSize);
-
-                    curObject = Terrain.CreateTerrainGameObject(curData);
-                    curTerr = curObject.GetComponent<Terrain>();
-
-                    curObject.transform.position = new Vector3((x * tileSize), 0, (y * tileSize));
-                    curData.SetHeights(0, 0, curHeights);
-
-                    curTerr.transform.parent = gameObject.transform;
-                    curTerr.editorRenderFlags = (TerrainRenderFlags)0;
-                    curTerr.castShadows = false;
-
-                    // Set names and tags
-                    curObject.name = "GreenTerrainTile";
-                    curObject.tag = "Green";
-                    curObject.layer = LayerMask.NameToLayer("Ground");
-                }
+                    MakeNewTerrainTile(Area.GREEN, x, y)
 
                 if ((curFlags & fairwayFlag) > 0)
-                {
-                    // Set heightmap values
-                    for (int j = 0; j < tileSize + 1; j++)
-                    {
-                        for (int i = 0; i < tileSize + 1; i++)
-                        {
-                            // If this is our terrain...
-                            if (groundmap[(tileSize * x) + i, (tileSize * y) + j] == Area.FAIRWAY)
-                            {
-                                // Set to heightmap
-                                curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i];
-                            }
-                            else
-                            {
-                                // Else, this terrain gets tucked under the actual terrain
-                                curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i] - overlapHeight;
-                            }
-
-                        }
-                    }
-
-                    // Make the terrain object
-                    curData = new TerrainData();
-                    curData.name = "" + x + "x" + y + "y";
-                    curData.size = new Vector3(tileSize, heightScale, tileSize);
-
-                    curObject = Terrain.CreateTerrainGameObject(curData);
-                    curTerr = curObject.GetComponent<Terrain>();
-
-                    curObject.transform.position = new Vector3((x * tileSize), 0, (y * tileSize));
-                    curData.SetHeights(0, 0, curHeights);
-
-                    curTerr.transform.parent = gameObject.transform;
-                    curTerr.editorRenderFlags = (TerrainRenderFlags)0;
-                    curTerr.castShadows = false;
-
-                    // Set names and tags
-                    curObject.name = "FairwayTerrainTile";
-                    curObject.tag = "Fairway";
-                    curObject.layer = LayerMask.NameToLayer("Ground");
-                }
+                    MakeNewTerrainTile(Area.FAIRWAY, x, y)
 
                 if ((curFlags & roughFlag) > 0)
-                {
-
-                    // Set heightmap values
-                    for (int j = 0; j < tileSize + 1; j++)
-                    {
-                        for (int i = 0; i < tileSize + 1; i++)
-                        {
-                            // If this is our terrain...
-                            if (groundmap[(tileSize * x) + i, (tileSize * y) + j] == Area.ROUGH)
-                            {
-                                // Set to heightmap
-                                curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i];
-                            }
-                            else
-                            {
-                                // Else, this terrain gets tucked under the actual terrain
-                                curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i] - overlapHeight;
-                            }
-
-                        }
-                    }
-
-                    // Make the terrain object
-                    curData = new TerrainData();
-                    curData.name = "" + x + "x" + y + "y";
-                    curData.size = new Vector3(tileSize, heightScale, tileSize);
-
-                    curObject = Terrain.CreateTerrainGameObject(curData);
-                    curTerr = curObject.GetComponent<Terrain>();
-
-                    curObject.transform.position = new Vector3((x * tileSize), 0, (y * tileSize));
-                    curData.SetHeights(0, 0, curHeights);
-
-                    curTerr.transform.parent = gameObject.transform;
-                    curTerr.editorRenderFlags = (TerrainRenderFlags)0;
-                    curTerr.castShadows = false;
-
-                    // Set names and tags
-                    curObject.name = "RoughTerrainTile";
-                    curObject.tag = "Rough";
-                    curObject.layer = LayerMask.NameToLayer("Ground");
-                }
+                    MakeNewTerrainTile(Area.ROUGH, x, y)
+                    
 
                 if ((curFlags & extraRoughFlag) > 0)
-                {
-                    // Set heightmap values
-                    for (int j = 0; j < tileSize + 1; j++)
-                    {
-                        for (int i = 0; i < tileSize + 1; i++)
-                        {
-                            // If this is our terrain...
-                            if (groundmap[(tileSize * y) + j, (tileSize * x) + i] == Area.EXTRA_ROUGH)
-                            {
-                                // Set to heightmap
-                                curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i];
-                            }
-                            else
-                            {
-                                // Else, this terrain gets tucked under the actual terrain
-                                curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i] - overlapHeight;
-                            }
-
-                        }
-                    }
-
-                    // Make the terrain object
-                    curData = new TerrainData();
-                    curData.name = "" + x + "x" + y + "y";
-                    curData.size = new Vector3(tileSize, heightScale, tileSize);
-
-                    curObject = Terrain.CreateTerrainGameObject(curData);
-                    curTerr = curObject.GetComponent<Terrain>();
+                    MakeNewTerrainTile(Area.EXTRA_ROUGH, x, y)
                     
-                    curObject.transform.position = new Vector3((x * tileSize), 0, (y * tileSize));
-                    curData.SetHeights(0, 0, curHeights);
-
-                    curTerr.transform.parent = gameObject.transform;
-                    curTerr.editorRenderFlags = (TerrainRenderFlags)0;
-                    curTerr.castShadows = false;
-
-                    // Set names and tags
-                    curObject.name = "ExtraRoughTerrainTile";
-                    curObject.tag = "ExtraRough";
-                    curObject.layer = LayerMask.NameToLayer("Ground");
-                }
             }
         }
-
-        
-
-
-                // Make all valid terrain tile
-
-
-                //Set heightmaps
-
     }
 }

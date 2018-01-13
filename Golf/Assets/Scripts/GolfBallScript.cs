@@ -275,7 +275,6 @@ public class GolfBallScript : MonoBehaviour {
             print(newPos);
             newPos.y = 0;
 
-            print(newPos.normalized * (GOLFCLUBS[curClub].maxDist * (1 / transform.localScale.z)));
             DirectionPointer.transform.localPosition = newPos.normalized * (GOLFCLUBS[curClub].maxDist * (1 / transform.localScale.z));
         }
 

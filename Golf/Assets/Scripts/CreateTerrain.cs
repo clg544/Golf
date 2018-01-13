@@ -88,12 +88,12 @@ public class CreateTerrain : MonoBehaviour {
                             if (groundmap[(tileSize * x) + i, (tileSize * y) + j] == Area.GREEN)
                             {
                                 // Set to heightmap
-                                curHeights[j, i] = heightmap[(tileSize * x) + i, (tileSize * y) + j];
+                                curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i];
                             }
                             else
                             {
                                 // Else, this terrain gets tucked under the actual terrain
-                                curHeights[j, i] = heightmap[(tileSize * x) + i, (tileSize * y) + j] - overlapHeight;
+                                curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i] - overlapHeight;
                             }
 
                         }
@@ -117,6 +117,7 @@ public class CreateTerrain : MonoBehaviour {
                     // Set names and tags
                     curObject.name = "GreenTerrainTile";
                     curObject.tag = "Green";
+                    curObject.layer = LayerMask.NameToLayer("Ground");
                 }
 
                 if ((curFlags & fairwayFlag) > 0)
@@ -130,12 +131,12 @@ public class CreateTerrain : MonoBehaviour {
                             if (groundmap[(tileSize * x) + i, (tileSize * y) + j] == Area.FAIRWAY)
                             {
                                 // Set to heightmap
-                                curHeights[j, i] = heightmap[(tileSize * x) + i, (tileSize * y) + j];
+                                curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i];
                             }
                             else
                             {
                                 // Else, this terrain gets tucked under the actual terrain
-                                curHeights[j, i] = heightmap[(tileSize * x) + i, (tileSize * y) + j] - overlapHeight;
+                                curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i] - overlapHeight;
                             }
 
                         }
@@ -159,6 +160,7 @@ public class CreateTerrain : MonoBehaviour {
                     // Set names and tags
                     curObject.name = "FairwayTerrainTile";
                     curObject.tag = "Fairway";
+                    curObject.layer = LayerMask.NameToLayer("Ground");
                 }
 
                 if ((curFlags & roughFlag) > 0)
@@ -173,12 +175,12 @@ public class CreateTerrain : MonoBehaviour {
                             if (groundmap[(tileSize * x) + i, (tileSize * y) + j] == Area.ROUGH)
                             {
                                 // Set to heightmap
-                                curHeights[j, i] = heightmap[(tileSize * x) + i, (tileSize * y) + j];
+                                curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i];
                             }
                             else
                             {
                                 // Else, this terrain gets tucked under the actual terrain
-                                curHeights[j, i] = heightmap[(tileSize * x) + i, (tileSize * y) + j] - overlapHeight;
+                                curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i] - overlapHeight;
                             }
 
                         }
@@ -202,6 +204,7 @@ public class CreateTerrain : MonoBehaviour {
                     // Set names and tags
                     curObject.name = "RoughTerrainTile";
                     curObject.tag = "Rough";
+                    curObject.layer = LayerMask.NameToLayer("Ground");
                 }
 
                 if ((curFlags & extraRoughFlag) > 0)
@@ -212,15 +215,15 @@ public class CreateTerrain : MonoBehaviour {
                         for (int i = 0; i < tileSize + 1; i++)
                         {
                             // If this is our terrain...
-                            if (groundmap[(tileSize * x) + i, (tileSize * y) + j] == Area.EXTRA_ROUGH)
+                            if (groundmap[(tileSize * y) + j, (tileSize * x) + i] == Area.EXTRA_ROUGH)
                             {
                                 // Set to heightmap
-                                curHeights[j, i] = heightmap[(tileSize * x) + i, (tileSize * y) + j];
+                                curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i];
                             }
                             else
                             {
                                 // Else, this terrain gets tucked under the actual terrain
-                                curHeights[j, i] = heightmap[(tileSize * x) + i, (tileSize * y) + j] - overlapHeight;
+                                curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i] - overlapHeight;
                             }
 
                         }
@@ -244,6 +247,7 @@ public class CreateTerrain : MonoBehaviour {
                     // Set names and tags
                     curObject.name = "ExtraRoughTerrainTile";
                     curObject.tag = "ExtraRough";
+                    curObject.layer = LayerMask.NameToLayer("Ground");
                 }
             }
         }

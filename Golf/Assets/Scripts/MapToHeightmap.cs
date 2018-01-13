@@ -217,6 +217,6 @@ public class MapToHeightmap : MonoBehaviour {
 
         // Pass the values to the collision and texture creating scripts
         terrMaker.MakeTerrain(heightmap, groundmap, mapCreator.mapHeight, mapCreator.mapWidth);
-        terrPainter.PaintTerrain(heightmap, groundmap, mapHeight);
+        terrPainter.PaintTerrain(heightmap, groundmap, mapCreator.mapHeight);
     }
 }

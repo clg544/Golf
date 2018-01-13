@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class TextureTerrainScript : MonoBehaviour {
 
-    MapToHeightmap heightmapMaker;
+    public int x, y, z;
 
-    int alphaMapWidth;
-    int alphaMapHeight;
+    MapToHeightmap heightmapMaker;
+    
     float[,] heightmap;
     Area[,] groundmap;
     
@@ -25,6 +25,9 @@ public class TextureTerrainScript : MonoBehaviour {
      */
     public void PaintTerrain(float[,] heightmap, Area[,] groundmap, int size)
     {
+        this.heightmap = heightmap;
+        this.groundmap = groundmap;
+
         // Set heightmap
         myData.SetHeights(0, 0, heightmap);
 
@@ -36,16 +39,16 @@ public class TextureTerrainScript : MonoBehaviour {
                 switch (groundmap[x, y])
                 {
                     case (Area.GREEN):
-                        myAlpha[x, y, 0] = 1.0f;
+                        myAlpha[y, x, 0] = 1.0f;
                         break;
                     case (Area.FAIRWAY):
-                        myAlpha[x, y, 3] = 1.0f;
+                        myAlpha[y, x, 3] = 1.0f;
                         break;
                     case (Area.ROUGH):
-                        myAlpha[x, y, 1] = 1.0f;
+                        myAlpha[y, x, 1] = 1.0f;
                         break;
                     case (Area.EXTRA_ROUGH):
-                        myAlpha[x, y, 2] = 1.0f;
+                        myAlpha[y, x, 2] = 1.0f;
                         break;
                 }
             }
@@ -64,6 +67,11 @@ public class TextureTerrainScript : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-        
+       
 	}
+
+    void Update()
+    {
+        //myData.size = new Vector3(x, y, z);
+    }
 }

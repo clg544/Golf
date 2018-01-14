@@ -8,6 +8,9 @@ public class CreateTerrain : MonoBehaviour {
     public int heightScale;
     public float overlapHeight;   // How far the dominate terrain lifts above non-active terrains
 
+    Area[,] groundmap;
+    float[,] heightmap;
+
     public GameObject GreenTile;
     public GameObject FairwayTile;
     public GameObject RoughTile;
@@ -28,27 +31,26 @@ public class CreateTerrain : MonoBehaviour {
         string curName;
         string curTag;
         
-        
         switch(type){
             case Area.GREEN:
-                curFlag = roughFlag;
-                curType = Area.ROUGH;
-                curName = "RoughTerrainTile";
-                curTag = "Rough";
+                curFlag = greenFlag;
+                curType = Area.GREEN;
+                curName = "GreenTerrainTile";
+                curTag = "Green";
                 break;
             case Area.FAIRWAY:
                 curFlag = fairwayFlag;
                 curType = Area.FAIRWAY;
-                curName = "fairwayTerrainTile";
+                curName = "FairwayTerrainTile";
                 curTag = "Fairway";
                 break;
-            case Area.ROUGH
+            case Area.ROUGH:
                 curFlag = roughFlag;
                 curType = Area.ROUGH;
                 curName = "RoughTerrainTile";
                 curTag = "Rough";
                 break;
-            case Area.EXTRA_ROUGH
+            case Area.EXTRA_ROUGH:
                 curFlag = extraRoughFlag;
                 curType = Area.EXTRA_ROUGH;
                 curName = "ExtraRoughTerrainTile";
@@ -59,10 +61,11 @@ public class CreateTerrain : MonoBehaviour {
                 curType = Area.EXTRA_ROUGH;
                 curName = "ExtraRoughTerrainTile";
                 curTag = "ExtraRough";
-            
+                break;
         }
 
         // Set heightmap values
+        float[,] curHeights = new float[tileSize + 1, tileSize + 1];
         for (int j = 0; j < tileSize + 1; j++)
         {
             for (int i = 0; i < tileSize + 1; i++)
@@ -76,25 +79,33 @@ public class CreateTerrain : MonoBehaviour {
                 else
                 {
                     // Else, this terrain gets tucked under the actual terrain
-                    curHeights[j, i] = heightmap[(tileSize * y) + j, (tileSize * x) + i] - overlapHeight;
+                    curHeights[j, i] = 0;
                 }
             }
-        }    
-
-        // Make the terrain object
+        }
+        
+        // Instantiate Data
+        GameObject curObject;
+        Terrain curTerr;
+        TerrainData curData;
+        
+        // Fill Data for the object
         curData = new TerrainData();
         curData.name = "" + x + "x" + y + "y";
         curData.size = new Vector3(tileSize, heightScale, tileSize);
 
+        // Make the terrain object
         curObject = Terrain.CreateTerrainGameObject(curData);
         curTerr = curObject.GetComponent<Terrain>();
-
         curObject.transform.position = new Vector3((x * tileSize), 0, (y * tileSize));
-        curData.SetHeights(0, 0, curHeights);
 
+        // Fill terrain options
         curTerr.transform.parent = gameObject.transform;
         curTerr.editorRenderFlags = (TerrainRenderFlags)0;
         curTerr.castShadows = false;
+
+        // Apply data to terrain
+        curData.SetHeights(0, 0, curHeights);
 
         // Set names and tags
         curObject.name = curName;
@@ -107,6 +118,9 @@ public class CreateTerrain : MonoBehaviour {
     
     public void MakeTerrain(float[,] heightmap, Area[,] groundmap, int height, int width)
     {
+        this.heightmap = heightmap;
+        this.groundmap = groundmap;
+
         // Make an array of boolean flags, and set all to 0 
         int[,] typesRequired = new int[width / tileSize, height / tileSize];
         for (int y = 0; y < height / tileSize; y++)
@@ -148,31 +162,25 @@ public class CreateTerrain : MonoBehaviour {
 
         // Create series of Terrains
         int curFlags;
-        GameObject curObject;
-        Terrain curTerr;
-        TerrainData curData;
-        float[,] curHeights;
         for (int y = 0; y < height / tileSize; y++)
         {
             for (int x = 0; x < width / tileSize; x++)
             {
                 // Init
                 curFlags = typesRequired[x, y];
-                curHeights = new float[tileSize + 1, tileSize + 1];
-                
+
                 // Create all the terrain types that exist in this area
                 if ((curFlags & greenFlag) > 0)
-                    MakeNewTerrainTile(Area.GREEN, x, y)
+                    MakeNewTerrainTile(Area.GREEN, x, y);
 
                 if ((curFlags & fairwayFlag) > 0)
-                    MakeNewTerrainTile(Area.FAIRWAY, x, y)
+                    MakeNewTerrainTile(Area.FAIRWAY, x, y);
 
                 if ((curFlags & roughFlag) > 0)
-                    MakeNewTerrainTile(Area.ROUGH, x, y)
-                    
-
+                    MakeNewTerrainTile(Area.ROUGH, x, y);
+                
                 if ((curFlags & extraRoughFlag) > 0)
-                    MakeNewTerrainTile(Area.EXTRA_ROUGH, x, y)
+                    MakeNewTerrainTile(Area.EXTRA_ROUGH, x, y);
                     
             }
         }

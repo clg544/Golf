@@ -52,10 +52,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e48e1c3c4b1582d4aba41685f638262c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  curPower: 0
   rotateSpeed: 30
   golfball: {fileID: 0}
-  ballPointer: {fileID: 0}
   swingCam: {fileID: 0}
+  cameraTarget: {fileID: 0}
 --- !u!114 &114480339002328494
 MonoBehaviour:
   m_ObjectHideFlags: 1

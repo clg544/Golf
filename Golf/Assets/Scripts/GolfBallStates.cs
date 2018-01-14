@@ -7,40 +7,45 @@ public class GolfBallStates : MonoBehaviour {
     private Rigidbody myBody;
     private GolfBallScript myBallScript;
     public Collider myCollider;
-
-    public enum GroundType
-    {
-        GREEN,
-        FAIRWAY,
-        ROUGH,
-        SANDTRAP,
-        EXTRAROUGH,
-        ASPHAULT,
-        DIRT
-    }
-
+    
     public bool isAirborne;
     public bool isOutOfBounds;
 
-    public GroundType curGround;
+    public Area curGround;
     
     public void OnTriggerEnter(Collider coll)
     {
         myBallScript.BallCollision();
 
-        if (coll.tag == "Fairway")
+        print(LayerMask.LayerToName(coll.gameObject.layer));
+        print(coll.gameObject.tag);
+
+        if(coll.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
-            curGround = GroundType.FAIRWAY;
+            switch (coll.gameObject.tag)
+            {
+                case "Green":
+                    curGround = Area.GREEN;
+                    break;
+                case "Fairway":
+                    curGround = Area.FAIRWAY;
+                    break;
+                case "Rough":
+                    curGround = Area.ROUGH;
+                    break;
+                case "ExtraRough":
+                    curGround = Area.EXTRA_ROUGH;
+                    break;
+                default:
+                    throw new System.Exception
+                        ("GolfBallStates:OnTriggerEnter:Unexpected Tag passed from ground layer:" 
+                        + coll.gameObject.tag.ToString());
+            }
         }
     }
 
     public void OnTriggerStay(Collider coll)
     {
-        if (coll.tag == "Fairway")
-        {
-            curGround = GroundType.FAIRWAY;
-        }
-
         isAirborne = false;
     }
 

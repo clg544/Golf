@@ -239,32 +239,32 @@ Prefab:
     - target: {fileID: 224692474702127838, guid: 163bbe1b20f24ca4c95ade9536888635,
         type: 2}
       propertyPath: m_AnchorMin.x
-      value: 0
+      value: 0.9
       objectReference: {fileID: 0}
     - target: {fileID: 224692474702127838, guid: 163bbe1b20f24ca4c95ade9536888635,
         type: 2}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 224692474702127838, guid: 163bbe1b20f24ca4c95ade9536888635,
         type: 2}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 224529904298506766, guid: 163bbe1b20f24ca4c95ade9536888635,
         type: 2}
       propertyPath: m_AnchorMin.x
-      value: 0
+      value: 0.9
       objectReference: {fileID: 0}
     - target: {fileID: 224529904298506766, guid: 163bbe1b20f24ca4c95ade9536888635,
         type: 2}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 0.9
       objectReference: {fileID: 0}
     - target: {fileID: 224529904298506766, guid: 163bbe1b20f24ca4c95ade9536888635,
         type: 2}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 163bbe1b20f24ca4c95ade9536888635, type: 2}
@@ -370,6 +370,26 @@ Prefab:
       propertyPath: m_RootOrder
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 114847210706573766, guid: 1b00b7163cfd96f4b8eb703e628b8d1a,
+        type: 2}
+      propertyPath: minSandCircles
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114847210706573766, guid: 1b00b7163cfd96f4b8eb703e628b8d1a,
+        type: 2}
+      propertyPath: maxSandCircles
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 114847210706573766, guid: 1b00b7163cfd96f4b8eb703e628b8d1a,
+        type: 2}
+      propertyPath: minSandRadius
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114847210706573766, guid: 1b00b7163cfd96f4b8eb703e628b8d1a,
+        type: 2}
+      propertyPath: maxSandRadius
+      value: 5
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 1b00b7163cfd96f4b8eb703e628b8d1a, type: 2}
   m_IsPrefabParent: 0
@@ -474,6 +494,10 @@ MonoBehaviour:
   par3Min: 60
   par4Min: 120
   par5Min: 180
+  minSandCircles: 0
+  maxSandCircles: 0
+  minSandRadius: 0
+  maxSandRadius: 0
 --- !u!20 &2023999562 stripped
 Camera:
   m_PrefabParentObject: {fileID: 20532374175503990, guid: 163bbe1b20f24ca4c95ade9536888635,

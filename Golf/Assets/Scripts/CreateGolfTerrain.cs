@@ -85,11 +85,19 @@ public class CreateGolfTerrain : MonoBehaviour {
     public BoundingBox fairwayBox;
     public BoundingBox roughBox;
     public BoundingBox extraRoughBox;
-    
+    public BoundingBox sandBox;
+
+    // In the creation of Sand traps, min a max # of circles to place
+    public int minSandCircles;
+    public int maxSandCircles;
+    public int minSandRadius;
+    public int maxSandRadius;
+
+
     /**
      * float Point2PointDistance(int[] p1, int[] p2)
      * 
-     */ 
+     */
     public float PointDistance(int[] p1, int[] p2)
     {
         float x_dist = p2[0] - p1[0];
@@ -130,6 +138,9 @@ public class CreateGolfTerrain : MonoBehaviour {
                 break;
             case Area.GREEN:
                 myBounds = greenBox;
+                break;
+            case Area.SAND:
+                myBounds = sandBox;
                 break;
             default:
                 myBounds = new BoundingBox(Area.UNSET);
@@ -319,16 +330,6 @@ public class CreateGolfTerrain : MonoBehaviour {
     } 
 
     /**
-     *  void MakeGreen - Place the green with the hole at this position
-     *  
-     *      int[] position  - int[x, y]: The x & y position to make green around
-     */
-    public void MakeGreen(int[] position)
-    {
-
-    }
-
-    /**
      *  void FillPolygon
      * 
      *      points  - Four points that descripe the polygon.  Dimension one represents [x, y],
@@ -457,6 +458,14 @@ public class CreateGolfTerrain : MonoBehaviour {
         }
     }
 
+    /**
+     *  void MakeGreen(int[] point, int radius) - Define the bounding box of the green, then fill it
+     *              within that boundary.
+     *              
+     *      point - The centre of the green circle
+     *      radius - The radius of the green circle
+     *      
+     */
     public void MakeGreen(int[] point, int radius)
     {
         greenBox.x_min = point[0] - radius;
@@ -466,6 +475,89 @@ public class CreateGolfTerrain : MonoBehaviour {
 
         SetRadiusToValue(point, radius, Area.GREEN);
     }
+
+
+    public void MakeSandTrap(BoundingBox curSandBox)
+    {
+        // Determin how many circles we're going to place
+        int numCircles = Random.Range(minSandCircles, maxSandCircles + 1);
+
+        // Iteration variables
+        int curRadius;
+        int[] curPoint;
+
+        // for 0 to num circles
+        for(int i = 0; i < numCircles; i++)
+        {
+            curPoint = new int[2] {Random.Range(curSandBox.x_min + (int)maxSandRadius,
+                                                curSandBox.x_max - (int)maxSandRadius),
+                                   Random.Range(curSandBox.y_min + (int)maxSandRadius,
+                                                curSandBox.y_max - (int)maxSandRadius) };
+
+            curRadius = Random.Range(minSandRadius, maxSandRadius);
+
+            try
+            {
+
+                SetRadiusToValue(curPoint, curRadius, Area.SAND);
+            }
+            catch (System.IndexOutOfRangeException)
+            {
+                print("curPoint = " + curPoint[0] + "," + curPoint[1]);
+                print("curRadius = " + curRadius);
+            }
+        }
+    }
+
+
+    public void PlaceSandTraps(int minTraps, int MaxTraps)
+    {
+        int numTraps = Random.Range(minTraps, MaxTraps + 1);
+        List<int[]> pointList = new List<int[]>();
+        int[] curPoint;
+
+        // Build a list of all fairway transitions
+        for (int y = fairwayBox.y_min; y < fairwayBox.y_max; y++)
+        {
+            for (int x = fairwayBox.x_min; x < fairwayBox.x_max; x++)
+            {
+                if (y < 1 || y >= mapHeight - 1 || x < 1 || x >= mapHeight - 1)
+                    break;
+
+                if(groundType[x, y] == Area.FAIRWAY)
+                {
+                    if(groundType[x - 1, y] != Area.FAIRWAY || groundType[x + 1, y] != Area.FAIRWAY ||
+                        groundType[x, y - 1] != Area.FAIRWAY || groundType[x, y + 1] != Area.FAIRWAY)
+                    {
+                        curPoint = new int[2];
+
+                        curPoint[0] = x;
+                        curPoint[1] = y;
+
+                        pointList.Add(curPoint);
+                        break;
+                    }
+                }
+            }
+        }
+
+        BoundingBox curSandBox;
+        for (int i = 0; i < numTraps; i++)
+        {
+            curPoint = pointList[Random.Range(0, pointList.Count)];
+
+            curSandBox = new BoundingBox(Area.SAND);
+            
+            curSandBox.x_min = Mathf.Max(0, curPoint[0] - (maxSandRadius + 1));
+            curSandBox.x_max = Mathf.Min(mapHeight - 1, curPoint[0] + (maxSandRadius + 1));
+            curSandBox.y_min = Mathf.Max(0, curPoint[1] - (maxSandRadius + 1));
+            curSandBox.y_max = Mathf.Min(mapHeight - 1, curPoint[1] + (maxSandRadius + 1));
+
+            MakeSandTrap(curSandBox);
+        }
+
+    }
+
 
     /**
      * void SurroundFairwayWithRough - For each point that is within resolution of fairway,
@@ -602,6 +694,7 @@ public class CreateGolfTerrain : MonoBehaviour {
     {
         CreateBorder(3, Area.ASPHAULT);
         MakeFairway(par);
+        PlaceSandTraps(2, 3);
         SurroundFairwayWithRough(20);
         SurroundRoughWithExtraRough(20);
         SetUnsetArea(Area.EXTRA_ROUGH);
@@ -625,6 +718,7 @@ public class CreateGolfTerrain : MonoBehaviour {
         points[1, 3] = 41;
 
         FillPolygon(points, Area.FAIRWAY);
+
 
     }
 

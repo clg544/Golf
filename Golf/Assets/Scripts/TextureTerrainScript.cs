@@ -50,6 +50,9 @@ public class TextureTerrainScript : MonoBehaviour {
                     case (Area.EXTRA_ROUGH):
                         myAlpha[y, x, 2] = 1.0f;
                         break;
+                    case (Area.SAND):
+                        myAlpha[y, x, 4] = 1.0f;
+                        break;
                 }
             }
         }
@@ -63,15 +66,5 @@ public class TextureTerrainScript : MonoBehaviour {
         myData = textureTerrain.terrainData;
 
         myAlpha = new float[myData.alphamapWidth, myData.alphamapHeight, myData.alphamapLayers];
-    }
-
-	// Use this for initialization
-	void Start () {
-       
-	}
-
-    void Update()
-    {
-        //myData.size = new Vector3(x, y, z);
     }
 }

@@ -17,9 +17,6 @@ public class GolfBallStates : MonoBehaviour {
     {
         myBallScript.BallCollision();
 
-        print(LayerMask.LayerToName(coll.gameObject.layer));
-        print(coll.gameObject.tag);
-
         if(coll.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
             switch (coll.gameObject.tag)

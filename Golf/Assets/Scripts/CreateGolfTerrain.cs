@@ -81,6 +81,7 @@ public class CreateGolfTerrain : MonoBehaviour {
     public float par5Min = 451;
 
     // [Xmin, Xmax, Ymin, Ymax]
+    public BoundingBox wholeBoard;
     public BoundingBox greenBox;
     public BoundingBox fairwayBox;
     public BoundingBox roughBox;
@@ -124,7 +125,7 @@ public class CreateGolfTerrain : MonoBehaviour {
             throw new System.Exception("CreateGolfTerrain:SetRadiusToValue:'point.Length is not = 2!'");
         }
 
-        // Find the boundaeies that we're using
+        // Find the boundaries that we're using
         switch (type)
         {
             case Area.FAIRWAY:
@@ -220,7 +221,7 @@ public class CreateGolfTerrain : MonoBehaviour {
     }
 
     /**
-     * void FillBitangent - Given two circles, calculate the bitangental rhombus and fill with type
+     * void FillBitangent - Given two circles, calculate the bitangental trapezoid and fill with type
      * 
      *      int[] p1    - int[x, y]: The x & y coordinates of circle one
      *      int[] p2    - int[x, y]: The x & y coordinates of circle two
@@ -230,62 +231,83 @@ public class CreateGolfTerrain : MonoBehaviour {
      */
     public void FillBitangent(int[] p1, int[] p2, int r1, int r2, Area type)
     {
-        // The path of the fairway
-        float[] pointsOfLine = new float[8];
-
         // Get angle between centres
         float x_diff = p1[0] - p2[0];
         float y_diff = p1[1] - p2[1];
         int theta = Mathf.FloorToInt(Mathf.Atan(y_diff / x_diff) * Mathf.Rad2Deg);
 
-        // Draw the Bitangental rhombus 
-        int[,] rhombus = new int[2, 4];
+        // Draw the Bitangental trapezoid 
+        int[,] trapezoid = new int[2, 4];
 
-        // Define the rhombus from the given values
+        // Define the trapezoid from the given values
         int[] curPoint;
-
-        curPoint = FindPointFromVector(p1, theta + 90, r1 + 1);
-        rhombus[0, 0] = curPoint[0];
-        rhombus[1, 0] = curPoint[1];
-        heightmap[rhombus[0, 0], rhombus[1, 0]] = 1;
         
-        curPoint = FindPointFromVector(p1, theta - 90, r1 + 1);
-        rhombus[0, 1] = curPoint[0];
-        rhombus[1, 1] = curPoint[1];
-        heightmap[rhombus[0, 1], rhombus[1, 1]] = 1;
-
-        curPoint = FindPointFromVector(p2, theta - 90, r2 + 1);
-        rhombus[0, 2] = curPoint[0];
-        rhombus[1, 2] = curPoint[1];
-        heightmap[rhombus[0, 2], rhombus[1, 2]] = 1;
-
-        curPoint = FindPointFromVector(p2, theta + 90, r2 + 1);
-        rhombus[0, 3] = curPoint[0];
-        rhombus[1, 3] = curPoint[1];
-        heightmap[rhombus[0, 3], rhombus[1, 3]] = 1;
-
-        // Create the rhombus window for iteration
-        int minX = 0;
-        int minY = 0;
-        int maxX = mapWidth;
-        int maxY = mapHeight;
+        curPoint = FindPointFromVector(p1, theta + 90, r1);
+        trapezoid[0, 0] = curPoint[0];
+        trapezoid[1, 0] = curPoint[1];
+        heightmap[trapezoid[0, 0], trapezoid[1, 0]] = 1;
         
-        for (int y = 0; y < 4; y++)
+        curPoint = FindPointFromVector(p1, theta - 90, r1);
+        trapezoid[0, 1] = curPoint[0];
+        trapezoid[1, 1] = curPoint[1];
+        heightmap[trapezoid[0, 1], trapezoid[1, 1]] = 1;
+
+        curPoint = FindPointFromVector(p2, theta - 90, r2);
+        trapezoid[0, 2] = curPoint[0];
+        trapezoid[1, 2] = curPoint[1];
+        heightmap[trapezoid[0, 2], trapezoid[1, 2]] = 1;
+
+        curPoint = FindPointFromVector(p2, theta + 90, r2);
+        trapezoid[0, 3] = curPoint[0];
+        trapezoid[1, 3] = curPoint[1];
+        heightmap[trapezoid[0, 3], trapezoid[1, 3]] = 1;
+
+        int[,] orderedTrapezoid = new int[2, 4];
+        int maxX = 0, maxY = 0, minX = mapWidth, minY = mapHeight;
+        // Order the lines by Direction, clockwise after Q1 direction
+        for(int i = 0; i < 4; i++)
         {
-            minX = Mathf.Min(minX, rhombus[0, y]);
-            maxX = Mathf.Min(maxX, rhombus[0, y]);
-            minY = Mathf.Min(minY, rhombus[1, y]);
-            maxY = Mathf.Max(maxX, rhombus[1, y]);
+            if(trapezoid[0,i] < minX)
+            {
+                minX = trapezoid[0, i];
+
+                orderedTrapezoid[0, 0] = trapezoid[0, i];
+                orderedTrapezoid[1, 0] = trapezoid[1, i];
+            }
+
+            if (trapezoid[1, i] > maxY)
+            {
+                maxY = trapezoid[1, i];
+
+                orderedTrapezoid[0, 1] = trapezoid[0, i];
+                orderedTrapezoid[1, 1] = trapezoid[1, i];
+            }
+
+            if (trapezoid[0, i] > maxX)
+            {
+                maxX = trapezoid[0, i];
+
+                orderedTrapezoid[0, 2] = trapezoid[0, i];
+                orderedTrapezoid[1, 2] = trapezoid[1, i];
+            }
+
+            if (trapezoid[1, i] < minY)
+            {
+                minY = trapezoid[1, i];
+
+                orderedTrapezoid[0, 3] = trapezoid[0, i];
+                orderedTrapezoid[1, 3] = trapezoid[1, i];
+            }
         }
 
-        // Bounding window is the centre positions +- the larger radius
+        // Bounding window is the trapezoid corners positions +- the larger radius
         int maxRad = Mathf.Max(r1, r2);
         minX = Mathf.Max(minX - distanceMax, 0);
         maxX = Mathf.Min(maxX + distanceMax, mapWidth);
         minY = Mathf.Max(minY - distanceMax, 0);
         maxY = Mathf.Min(maxY + distanceMax, mapHeight);
         
-        // Fill the rhombus
+        // Fill the trapezoid
         bool test;
         int[] line1, line2;
         // For the entire min-max bound window...
@@ -297,24 +319,24 @@ public class CreateGolfTerrain : MonoBehaviour {
                 test = true;
                 
                 // left to top...
-                line1 = new int[] { rhombus[0, 0], rhombus[1, 0] };
-                line2 = new int[] { rhombus[0, 1], rhombus[1, 1] };
-                test = test && (PointToLineTest(line1, line2, curPoint) <= 0);
+                line1 = new int[] { orderedTrapezoid[0, 0], orderedTrapezoid[1, 0] };
+                line2 = new int[] { orderedTrapezoid[0, 1], orderedTrapezoid[1, 1] };
+                test = test && (PointToLineTest(line1, line2, curPoint) < 0);
 
                 // top to right
-                line1 = new int[] { rhombus[0, 1], rhombus[1, 1] };
-                line2 = new int[] { rhombus[0, 2], rhombus[1, 2] };
-                test = test && (PointToLineTest(line1, line2, curPoint) <= 0);
+                line1 = new int[] { orderedTrapezoid[0, 1], orderedTrapezoid[1, 1] };
+                line2 = new int[] { orderedTrapezoid[0, 2], orderedTrapezoid[1, 2] };
+                test = test && (PointToLineTest(line1, line2, curPoint) < 0);
 
                 // far right to bottom
-                line1 = new int[] { rhombus[0, 2], rhombus[1, 2] };
-                line2 = new int[] { rhombus[0, 3], rhombus[1, 3] };
-                test = test && (PointToLineTest(line1, line2, curPoint) <= 0);
+                line1 = new int[] { orderedTrapezoid[0, 2], orderedTrapezoid[1, 2] };
+                line2 = new int[] { orderedTrapezoid[0, 3], orderedTrapezoid[1, 3] };
+                test = test && (PointToLineTest(line1, line2, curPoint) < 0);
 
                 // bottom to left
-                line1 = new int[] { rhombus[0, 0], rhombus[1, 0] };
-                line2 = new int[] { rhombus[0, 3], rhombus[1, 3] };
-                test = test && (PointToLineTest(line1, line2, curPoint) >= 0);
+                line1 = new int[] { orderedTrapezoid[0, 0], orderedTrapezoid[1, 0] };
+                line2 = new int[] { orderedTrapezoid[0, 3], orderedTrapezoid[1, 3] };
+                test = test && (PointToLineTest(line1, line2, curPoint) > 0);
 
                 // if test is true after all four assertions...
                 if (test)
@@ -345,7 +367,7 @@ public class CreateGolfTerrain : MonoBehaviour {
         maxX = Mathf.Max(points[0, 0], points[0, 1], points[0, 2], points[0, 3]);
         maxY = Mathf.Max(points[1, 0], points[1, 1], points[1, 2], points[1, 3]);
         
-        // Fill the rhombus
+        // Fill the trapezoid
         bool test;
         int[] line1, line2, curPoint;
         // For the entire min-max bound window...
@@ -482,29 +504,32 @@ public class CreateGolfTerrain : MonoBehaviour {
         // Determin how many circles we're going to place
         int numCircles = Random.Range(minSandCircles, maxSandCircles + 1);
 
-        // Iteration variables
-        int curRadius;
-        int[] curPoint;
+        // List of circles, [x, y, radius][circle #]
+        int[,] circleList = new int[3, numCircles];
 
         // for 0 to num circles
-        for(int i = 0; i < numCircles; i++)
+        for (int i = 0; i < numCircles; i++)
         {
-            curPoint = new int[2] {Random.Range(curSandBox.x_min + (int)maxSandRadius,
-                                                curSandBox.x_max - (int)maxSandRadius),
-                                   Random.Range(curSandBox.y_min + (int)maxSandRadius,
-                                                curSandBox.y_max - (int)maxSandRadius) };
+            // X
+            circleList[0, i] = Random.Range(curSandBox.x_min + (int)maxSandRadius,
+                                         curSandBox.x_max - (int)maxSandRadius);
+            //Y
+            circleList[1, i] = Random.Range(curSandBox.y_min + (int)maxSandRadius,
+                                                curSandBox.y_max - (int)maxSandRadius);
+            // R
+            circleList[2, i] = Random.Range(minSandRadius, maxSandRadius);
 
-            curRadius = Random.Range(minSandRadius, maxSandRadius);
+            
+            SetRadiusToValue(new int[] { circleList[0, i], circleList[1, i] }, circleList[2, i], Area.SAND);
+        }
 
-            try
+        // For each circle to every other, fill the bitangent
+        for (int i = 0; i < numCircles - 1; i++)
+        {
+            for(int j = i + 1; j < numCircles; j++)
             {
-
-                SetRadiusToValue(curPoint, curRadius, Area.SAND);
-            }
-            catch (System.IndexOutOfRangeException)
-            {
-                print("curPoint = " + curPoint[0] + "," + curPoint[1]);
-                print("curRadius = " + curRadius);
+                FillBitangent(new int[] { circleList[0, i], circleList[1, i] }, new int[] { circleList[0, j], circleList[1, j] },
+                    circleList[2, j], circleList[2, j], Area.SAND);
             }
         }
     }
@@ -548,16 +573,53 @@ public class CreateGolfTerrain : MonoBehaviour {
 
             curSandBox = new BoundingBox(Area.SAND);
             
-            curSandBox.x_min = Mathf.Max(0, curPoint[0] - (maxSandRadius + 1));
-            curSandBox.x_max = Mathf.Min(mapHeight - 1, curPoint[0] + (maxSandRadius + 1));
-            curSandBox.y_min = Mathf.Max(0, curPoint[1] - (maxSandRadius + 1));
-            curSandBox.y_max = Mathf.Min(mapHeight - 1, curPoint[1] + (maxSandRadius + 1));
+            curSandBox.x_min = Mathf.Max(0, curPoint[0] - (maxSandRadius * 3));
+            curSandBox.x_max = Mathf.Min(mapHeight - 1, curPoint[0] + (maxSandRadius * 3));
+            curSandBox.y_min = Mathf.Max(0, curPoint[1] - (maxSandRadius * 3));
+            curSandBox.y_max = Mathf.Min(mapHeight - 1, curPoint[1] + (maxSandRadius * 3));
+
+            sandBox = curSandBox;
 
             MakeSandTrap(curSandBox);
         }
-
     }
 
+
+    /**d
+     * void Buffer(int resolution) - Use a buffer window of size resolution to expand the given type
+     *                             
+     *      type        - The Area type to buffer         
+     *      resolution  - distance to check for type value.  
+     */
+    public void Buffer(Area type, int resolution)
+    {
+        // For each point..
+        for (int y = 0; y < mapHeight; y++)
+        {
+            for (int x = 0; x < mapWidth; x++)
+            {
+                //if (Random.Range(0.0f, 1.0f) > 0.9f) print("x: " + x + " y: " + y + " " + groundType[x, y]);
+
+                if (groundType[x, y] == type)
+                {
+                    // For each point in the window...
+                    for (int j = y - resolution; j < y + resolution; j++)
+                    {
+                        for (int i = x - resolution; i < x + resolution; i++)
+                        {
+                            if (!(i < 0 || j < 0 || i >= mapWidth || j >= mapHeight) && 
+                                !(resolution > PointDistance(new int[] { x, y }, new int[] { i, j })))
+                            {
+                                print("Hit!");
+                                groundType[x, y] = type;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
 
     /**
      * void SurroundFairwayWithRough - For each point that is within resolution of fairway,
@@ -699,6 +761,8 @@ public class CreateGolfTerrain : MonoBehaviour {
         SurroundRoughWithExtraRough(20);
         SetUnsetArea(Area.EXTRA_ROUGH);
 
+        Buffer(Area.SAND, 100);
+
         int[,] points = new int[2,4];
 
         // p0
@@ -718,8 +782,6 @@ public class CreateGolfTerrain : MonoBehaviour {
         points[1, 3] = 41;
 
         FillPolygon(points, Area.FAIRWAY);
-
-
     }
 
     /**
@@ -784,7 +846,13 @@ public class CreateGolfTerrain : MonoBehaviour {
         fairwayBox = new BoundingBox(Area.FAIRWAY);
         roughBox = new BoundingBox(Area.ROUGH);
         extraRoughBox = new BoundingBox(Area.EXTRA_ROUGH);
+        wholeBoard = new BoundingBox(Area.UNSET);
 
+        wholeBoard.x_min = 0;
+        wholeBoard.x_max = mapWidth;
+        wholeBoard.y_min = 0;
+        wholeBoard.y_max = mapHeight;
+        
         for (int y = 0; y < mapHeight; y++)
         {
             for (int x = 0; x < mapWidth; x++)

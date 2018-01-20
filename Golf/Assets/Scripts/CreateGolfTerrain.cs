@@ -101,8 +101,8 @@ public class CreateGolfTerrain : MonoBehaviour {
      */
     public float PointDistance(int[] p1, int[] p2)
     {
-        float x_dist = p2[0] - p1[0];
-        float y_dist = p2[1] - p1[1]; 
+        float x_dist = (float)(p2[0] - p1[0]);
+        float y_dist = (float)(p2[1] - p1[1]); 
 
         return Mathf.Sqrt((x_dist * x_dist) + (y_dist * y_dist));
 
@@ -573,10 +573,10 @@ public class CreateGolfTerrain : MonoBehaviour {
 
             curSandBox = new BoundingBox(Area.SAND);
             
-            curSandBox.x_min = Mathf.Max(0, curPoint[0] - (maxSandRadius * 3));
-            curSandBox.x_max = Mathf.Min(mapHeight - 1, curPoint[0] + (maxSandRadius * 3));
-            curSandBox.y_min = Mathf.Max(0, curPoint[1] - (maxSandRadius * 3));
-            curSandBox.y_max = Mathf.Min(mapHeight - 1, curPoint[1] + (maxSandRadius * 3));
+            curSandBox.x_min = Mathf.Max(0, curPoint[0] - (maxSandRadius * 2));
+            curSandBox.x_max = Mathf.Min(mapHeight - 1, curPoint[0] + (maxSandRadius * 2));
+            curSandBox.y_min = Mathf.Max(0, curPoint[1] - (maxSandRadius * 2));
+            curSandBox.y_max = Mathf.Min(mapHeight - 1, curPoint[1] + (maxSandRadius * 2));
 
             sandBox = curSandBox;
 
@@ -585,33 +585,61 @@ public class CreateGolfTerrain : MonoBehaviour {
     }
 
 
-    /**d
+    /**
      * void Buffer(int resolution) - Use a buffer window of size resolution to expand the given type
      *                             
      *      type        - The Area type to buffer         
      *      resolution  - distance to check for type value.  
      */
-    public void Buffer(Area type, int resolution)
+    public void SurroundTypeWithNewType(int resolution, Area type, Area newType)
     {
-        // For each point..
+        bool[,] visited = new bool[mapWidth, mapHeight];
+
+        // Initialize to false
         for (int y = 0; y < mapHeight; y++)
         {
             for (int x = 0; x < mapWidth; x++)
             {
-                //if (Random.Range(0.0f, 1.0f) > 0.9f) print("x: " + x + " y: " + y + " " + groundType[x, y]);
+                visited[x, y] = false;
+            }
+        }
 
-                if (groundType[x, y] == type)
+        for (int y = 0; y < mapHeight; y++)
+        {
+            for (int x = 0; x < mapWidth; x++)
+            {
+                if (groundType[x, y] != type)
                 {
-                    // For each point in the window...
+                    //if (Random.Range(0.0f, 1.0f) > 0.95f) print("Hit 1");
+                }
+
+                else if (visited[x, y])
+                {
+                    //if (Random.Range(0.0f, 1.0f) > 0.95f) print("Hit 2");
+                }
+
+                else
+                {
+                    // For 'resolution' around curPoint... 
                     for (int j = y - resolution; j < y + resolution; j++)
                     {
                         for (int i = x - resolution; i < x + resolution; i++)
                         {
-                            if (!(i < 0 || j < 0 || i >= mapWidth || j >= mapHeight) && 
-                                !(resolution > PointDistance(new int[] { x, y }, new int[] { i, j })))
+                            // if out of bounds, break
+                            if (i < 0 || i >= mapWidth || j < 0 || j >= mapHeight)
                             {
-                                print("Hit!");
-                                groundType[x, y] = type;
+                                //if (Random.Range(0.0f, 1.0f) > 0.95f) print("Hit 3");
+                            }
+                            // if outside of resolution circle, break
+                            else if (PointDistance(new int[2] { i, j }, new int[2] { x, y }) > (float)resolution)
+                            {
+                                //if (Random.Range(0.0f, 1.0f) > 0.95f) print("Hit 4");
+                            }
+                            else
+                            {
+                                // Set to newType, and update set visited so as not to recurse
+                                groundType[i, j] = newType;
+                                visited[i, j] = true;
                             }
                         }
                     }
@@ -619,7 +647,108 @@ public class CreateGolfTerrain : MonoBehaviour {
             }
         }
     }
-    
+
+
+    /** 
+     * void AverageAllTypes(int resolution) - Set value to the average type of the resolution window
+     * 
+     *      int resolution - the square size of the window
+     */
+    public void AverageAllTypes(int resolution)
+    {
+        Area[,] newTypeArr = new Area[mapWidth, mapHeight];
+
+        Area newType = Area.DIRT;
+        int curMaximum;
+        int fairwayCount, roughCount, extraRoughCount, greenCount, 
+            sandCount, asphaultCount, dirtCount, startCount;
+        
+        for (int y = 0; y < mapHeight; y++)
+        {
+            for (int x = 0; x < mapWidth; x++)
+            {
+                // Reset average count
+                curMaximum = 0;
+
+                fairwayCount = 0;
+                roughCount = 0;
+                extraRoughCount = 0;
+                greenCount = 0;
+                sandCount = 0;
+                asphaultCount = 0;
+                dirtCount = 0;
+                startCount = 0;
+
+                // For 'resolution' around curPoint... 
+                for (int j = y - resolution; j < y + resolution; j++)
+                {
+                    for (int i = x - resolution; i < x + resolution; i++)
+                    {
+                        // if on bounds, add the Area type
+                        if (!(i < 0 || i >= mapWidth || j < 0 || j >= mapHeight))
+                        {
+                            switch(groundType[i, j])
+                            {
+                                case (Area.FAIRWAY):
+                                    fairwayCount += 1;
+
+                                    if (fairwayCount > curMaximum)
+                                        newType = Area.FAIRWAY;
+                                    break;
+                                case (Area.ROUGH):
+                                    roughCount += 1;
+
+                                    if (roughCount > curMaximum)
+                                        newType = Area.ROUGH;
+                                    break;
+                                case (Area.EXTRA_ROUGH):
+                                    extraRoughCount += 1;
+
+                                    if (extraRoughCount > curMaximum)
+                                        newType = Area.EXTRA_ROUGH;
+                                    break;
+                                case (Area.GREEN):
+                                    greenCount += 1;
+
+                                    if (greenCount > curMaximum)
+                                        newType = Area.GREEN;
+                                    break;
+                                case (Area.SAND):
+                                    sandCount += 1;
+
+                                    if (sandCount > curMaximum)
+                                        newType = Area.SAND;
+                                    break;
+                                case (Area.ASPHAULT):
+                                    asphaultCount += 1;
+
+                                    if (asphaultCount > curMaximum)
+                                        newType = Area.ASPHAULT;
+                                    break;
+                                case (Area.DIRT):
+                                    dirtCount += 1;
+
+                                    if (dirtCount > curMaximum)
+                                        newType = Area.DIRT;
+                                    break;
+                                case (Area.START):
+                                    startCount += 1;
+
+                                    if (startCount > curMaximum)
+                                        newType = Area.START;
+                                    break;
+                            }
+                        }
+                    }
+                }
+
+                newTypeArr[x, y] = newType;
+            }
+        }
+
+        groundType = newTypeArr;
+    }
+
 
     /**
      * void SurroundFairwayWithRough - For each point that is within resolution of fairway,
@@ -629,13 +758,10 @@ public class CreateGolfTerrain : MonoBehaviour {
      */
     public void SurroundFairwayWithRough(int resolution)
     {
-        bool updated;
-
         for (int y = fairwayBox.y_min - (2 * resolution); y < fairwayBox.y_max + (2 * resolution); y++)
         {
             for (int x = fairwayBox.x_min - (2 * resolution); x < fairwayBox.x_max + (2 * resolution); x++)
             {
-                updated = false;
 
                 // If we're within the array and at an unset element...
                 if (x - resolution > 0 && x + resolution < mapWidth - 1 &&
@@ -643,26 +769,20 @@ public class CreateGolfTerrain : MonoBehaviour {
                     groundType[x, y] == Area.UNSET)
                 {
                     // For 'resolution' around curPoint... 
-                    for (int i = x - resolution; i < x + resolution; i++)
+                    for (int j = y - resolution; j < y + resolution; j++)
                     {
-                        for (int j = y - resolution; j < y + resolution; j++)
+                        for (int i = x - resolution; i < x + resolution; i++)
                         {
-                            // If we find fairway...
-                            if(groundType[i, j] == Area.FAIRWAY)
+                            // If we find fairway & it is within our resolution circle...
+                            if(groundType[i, j] == Area.FAIRWAY && (PointDistance(new int[2] { i, j }, 
+                                new int[2] { x, y }) < (float)resolution))
                             {
-                                if(PointDistance(new int[2] { i, j }, new int[2] { x, y }) < (float)resolution)
-                                {
-                                    // Set to Rough, and update rough bounding box
-                                    groundType[x, y] = Area.ROUGH;
-                                    roughBox.TestPointForUpdate(x, y);
-                                    updated = true;
-                                    break;
-                                }
+                                // Set to Rough, and update rough bounding box
+                                groundType[x, y] = Area.ROUGH;
+                                roughBox.TestPointForUpdate(x, y);
+                                break;
                             }
                         }
-                        // Break both loops if we were succesful
-                        if (updated)
-                            break;
                     }
                 }
             }
@@ -691,9 +811,9 @@ public class CreateGolfTerrain : MonoBehaviour {
                     groundType[x, y] == Area.UNSET)
                 {
                     // For 'resolution' around curPoint... 
-                    for (int i = x - resolution; i < x + resolution; i++)
+                    for (int j = y - resolution; j < y + resolution; j++)
                     {
-                        for (int j = y - resolution; j < y + resolution; j++)
+                        for (int i = x - resolution; i < x + resolution; i++)
                         {
                             // If we find rough...
                             if (groundType[i, j] == Area.ROUGH)
@@ -754,14 +874,17 @@ public class CreateGolfTerrain : MonoBehaviour {
     
     public void MakeNewCourse(int par)
     {
+        Random.InitState(0);
+
         CreateBorder(3, Area.ASPHAULT);
         MakeFairway(par);
         PlaceSandTraps(2, 3);
         SurroundFairwayWithRough(20);
-        SurroundRoughWithExtraRough(20);
         SetUnsetArea(Area.EXTRA_ROUGH);
-
-        Buffer(Area.SAND, 100);
+        SurroundTypeWithNewType(5, Area.SAND, Area.SAND);
+        AverageAllTypes(5);
+        AverageAllTypes(3);
+        AverageAllTypes(2);
 
         int[,] points = new int[2,4];
 

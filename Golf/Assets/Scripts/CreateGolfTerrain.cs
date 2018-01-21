@@ -476,7 +476,7 @@ public class CreateGolfTerrain : MonoBehaviour {
             }
 
             // If we're done making a fairway OR we're making a par 3, place our green.
-            MakeGreen(curPoint, curRadius - 10);
+            MakeGreen(curPoint, curRadius);
         }
     }
 
@@ -495,15 +495,12 @@ public class CreateGolfTerrain : MonoBehaviour {
         greenBox.y_min = point[1] - radius;
         greenBox.y_max = point[1] + radius;
 
-        SetRadiusToValue(point, radius, Area.GREEN);
+        MakeBlob(Area.GREEN, greenBox, 9, 2, 6);
     }
 
 
-    public void MakeSandTrap(BoundingBox curSandBox)
+    public void MakeBlob(Area type, BoundingBox curBounds, int numCircles, int minRad, int maxRad)
     {
-        // Determin how many circles we're going to place
-        int numCircles = Random.Range(minSandCircles, maxSandCircles + 1);
-
         // List of circles, [x, y, radius][circle #]
         int[,] circleList = new int[3, numCircles];
 
@@ -511,16 +508,16 @@ public class CreateGolfTerrain : MonoBehaviour {
         for (int i = 0; i < numCircles; i++)
         {
             // X
-            circleList[0, i] = Random.Range(curSandBox.x_min + (int)maxSandRadius,
-                                         curSandBox.x_max - (int)maxSandRadius);
+            circleList[0, i] = Random.Range(curBounds.x_min + maxRad,
+                                         curBounds.x_max - maxRad);
             //Y
-            circleList[1, i] = Random.Range(curSandBox.y_min + (int)maxSandRadius,
-                                                curSandBox.y_max - (int)maxSandRadius);
+            circleList[1, i] = Random.Range(curBounds.y_min + maxRad,
+                                                curBounds.y_max - maxRad);
             // R
-            circleList[2, i] = Random.Range(minSandRadius, maxSandRadius);
+            circleList[2, i] = Random.Range(minRad, maxRad);
 
             
-            SetRadiusToValue(new int[] { circleList[0, i], circleList[1, i] }, circleList[2, i], Area.SAND);
+            SetRadiusToValue(new int[] { circleList[0, i], circleList[1, i] }, circleList[2, i], type);
         }
 
         // For each circle to every other, fill the bitangent
@@ -529,7 +526,7 @@ public class CreateGolfTerrain : MonoBehaviour {
             for(int j = i + 1; j < numCircles; j++)
             {
                 FillBitangent(new int[] { circleList[0, i], circleList[1, i] }, new int[] { circleList[0, j], circleList[1, j] },
-                    circleList[2, j], circleList[2, j], Area.SAND);
+                    circleList[2, j], circleList[2, j], type);
             }
         }
     }
@@ -580,7 +577,8 @@ public class CreateGolfTerrain : MonoBehaviour {
 
             sandBox = curSandBox;
 
-            MakeSandTrap(curSandBox);
+            int numSandCircles = Random.Range(minSandCircles, maxSandCircles);
+            MakeBlob(Area.SAND, curSandBox, numSandCircles, minSandRadius, maxSandRadius);
         }
     }
 
@@ -882,6 +880,7 @@ public class CreateGolfTerrain : MonoBehaviour {
         SurroundFairwayWithRough(20);
         SetUnsetArea(Area.EXTRA_ROUGH);
         SurroundTypeWithNewType(5, Area.SAND, Area.SAND);
+        AverageAllTypes(10);
         AverageAllTypes(5);
         AverageAllTypes(3);
         AverageAllTypes(2);

@@ -869,42 +869,6 @@ public class CreateGolfTerrain : MonoBehaviour {
             }
         }
     }
-    
-    public void MakeNewCourse(int par)
-    {
-        Random.InitState(0);
-
-        CreateBorder(3, Area.ASPHAULT);
-        MakeFairway(par);
-        PlaceSandTraps(2, 3);
-        SurroundFairwayWithRough(20);
-        SetUnsetArea(Area.EXTRA_ROUGH);
-        SurroundTypeWithNewType(5, Area.SAND, Area.SAND);
-        AverageAllTypes(10);
-        AverageAllTypes(5);
-        AverageAllTypes(3);
-        AverageAllTypes(2);
-
-        int[,] points = new int[2,4];
-
-        // p0
-        points[0, 0] = 55;
-        points[1, 0] = 92;
-
-        //p1
-        points[0, 1] = 102;
-        points[1, 1] = 64;
-
-        //p2
-        points[0, 2] = 80;
-        points[1, 2] = 18;
-
-        //p3
-        points[0, 3] = 31;
-        points[1, 3] = 41;
-
-        FillPolygon(points, Area.FAIRWAY);
-    }
 
     /**
      *  void VisualizeGameBoard - visualize the generated terrain with coloured squares at (0, 0, 0)
@@ -958,6 +922,42 @@ public class CreateGolfTerrain : MonoBehaviour {
                 }
             }
         }
+    }
+
+    public void MakeNewCourse(int par)
+    {
+        Random.InitState(0);
+
+        CreateBorder(3, Area.ASPHAULT);
+        MakeFairway(par);
+        PlaceSandTraps(2, 3);
+        SurroundFairwayWithRough(20);
+        SetUnsetArea(Area.EXTRA_ROUGH);
+        SurroundTypeWithNewType(5, Area.SAND, Area.SAND);
+        AverageAllTypes(10);
+        AverageAllTypes(5);
+        AverageAllTypes(3);
+        AverageAllTypes(2);
+
+        int[,] points = new int[2, 4];
+
+        // p0
+        points[0, 0] = 55;
+        points[1, 0] = 92;
+
+        //p1
+        points[0, 1] = 102;
+        points[1, 1] = 64;
+
+        //p2
+        points[0, 2] = 80;
+        points[1, 2] = 18;
+
+        //p3
+        points[0, 3] = 31;
+        points[1, 3] = 41;
+
+        FillPolygon(points, Area.FAIRWAY);
     }
 
     void Awake()

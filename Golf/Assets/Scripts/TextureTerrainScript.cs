@@ -12,6 +12,7 @@ public class TextureTerrainScript : MonoBehaviour {
     Area[,] groundmap;
     
     public Terrain textureTerrain;
+    public Material terrainMaterial;
     TerrainData myData;
     float[,,] myAlpha;
 
@@ -41,14 +42,14 @@ public class TextureTerrainScript : MonoBehaviour {
                     case (Area.GREEN):
                         myAlpha[y, x, 0] = 1.0f;
                         break;
-                    case (Area.FAIRWAY):
-                        myAlpha[y, x, 3] = 1.0f;
-                        break;
                     case (Area.ROUGH):
                         myAlpha[y, x, 1] = 1.0f;
                         break;
                     case (Area.EXTRA_ROUGH):
                         myAlpha[y, x, 2] = 1.0f;
+                        break;
+                    case (Area.FAIRWAY):
+                        myAlpha[y, x, 3] = 1.0f;
                         break;
                     case (Area.SAND):
                         myAlpha[y, x, 4] = 1.0f;
@@ -64,6 +65,7 @@ public class TextureTerrainScript : MonoBehaviour {
     {
         heightmapMaker = gameObject.GetComponent<MapToHeightmap>();
         myData = textureTerrain.terrainData;
+        textureTerrain.materialTemplate = terrainMaterial;
 
         myAlpha = new float[myData.alphamapWidth, myData.alphamapHeight, myData.alphamapLayers];
     }

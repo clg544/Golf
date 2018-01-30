@@ -9,6 +9,8 @@ TagManager:
   - Green
   - Rough
   - ExtraRough
+  - TerrainTexture
+  - Ball
   layers:
   - Default
   - TransparentFX

@@ -207,6 +207,7 @@ public class MapToHeightmap : MonoBehaviour {
         int par = Random.Range(3, 6);
         mapCreator.MakeNewCourse(par);
         groundmap = mapCreator.getGroundMap();
+        int[] holePos = mapCreator.holeLocation;
 
         // Create the general heightmap
         ApplyBicubicInterpolation();
@@ -216,7 +217,7 @@ public class MapToHeightmap : MonoBehaviour {
             mapCreator.VisualizeGameBoard();
 
         // Pass the values to the collision and texture creating scripts
-        terrMaker.MakeTerrain(heightmap, groundmap, mapCreator.mapHeight, mapCreator.mapWidth);
+        terrMaker.MakeTerrain(heightmap, groundmap, holePos, mapCreator.mapHeight, mapCreator.mapWidth);
         terrPainter.PaintTerrain(heightmap, groundmap, mapCreator.mapHeight);
     }
 }

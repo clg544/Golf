@@ -272,7 +272,6 @@ public class GolfBallScript : MonoBehaviour {
             curIsDriver = GOLFCLUBS[curClub].isDriver;
 
             Vector3 newPos = DirectionPointer.transform.localPosition;
-            print(newPos);
             newPos.y = 0;
 
             DirectionPointer.transform.localPosition = newPos.normalized * (GOLFCLUBS[curClub].maxDist * (1 / transform.localScale.z));

@@ -7,6 +7,7 @@ public class CreateTerrain : MonoBehaviour {
     public int tileSize;
     public int heightScale;
     public float overlapHeight;   // How far the dominate terrain lifts above non-active terrains
+    public float cupHeight = .2f;
 
     Area[,] groundmap;
     float[,] heightmap;
@@ -15,13 +16,14 @@ public class CreateTerrain : MonoBehaviour {
     public GameObject FairwayTile;
     public GameObject RoughTile;
     public GameObject ExtraRoughTile;
+    public GameObject courseHole;
+
+    private const int testFlag = 0XFF;   
     
-    private int testFlag = 0XFF;   
-    
-    private int greenFlag       = 0x1;
-    private int fairwayFlag     = 0x2;
-    private int roughFlag       = 0x4;
-    private int extraRoughFlag  = 0x8;
+    private const int greenFlag       = 0x1;
+    private const int fairwayFlag     = 0x2;
+    private const int roughFlag       = 0x4;
+    private const int extraRoughFlag  = 0x8;
 
 
     void MakeNewTerrainTile(Area type, int x, int y)
@@ -116,7 +118,7 @@ public class CreateTerrain : MonoBehaviour {
     }
         
     
-    public void MakeTerrain(float[,] heightmap, Area[,] groundmap, int height, int width)
+    public void MakeTerrain(float[,] heightmap, Area[,] groundmap, int[] holeCoors, int height, int width)
     {
         this.heightmap = heightmap;
         this.groundmap = groundmap;
@@ -184,5 +186,23 @@ public class CreateTerrain : MonoBehaviour {
                     
             }
         }
+
+        // Place the hole
+        Vector3 holePos = new Vector3(0, 0, 0);
+        
+        // Find position
+        holePos.x = holeCoors[0];
+        holePos.z = holeCoors[1];
+        holePos.y = heightmap[holeCoors[0], holeCoors[1]] * heightScale - cupHeight;
+
+        // find Rotation
+        float xAngle = heightmap[holeCoors[0] + 1, holeCoors[1]] - heightmap[holeCoors[0] - 1, holeCoors[1]];
+        float yAngle = heightmap[holeCoors[0], holeCoors[1] + 1] - heightmap[holeCoors[0], holeCoors[1] - 1];
+
+        xAngle = Mathf.Atan(xAngle);
+        yAngle = Mathf.Atan(yAngle);
+
+        GameObject curObj = Instantiate(courseHole, holePos, Quaternion.identity, gameObject.transform);
+        
     }
 }

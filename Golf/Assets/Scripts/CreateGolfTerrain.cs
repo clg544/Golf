@@ -94,6 +94,9 @@ public class CreateGolfTerrain : MonoBehaviour {
     public int minSandRadius;
     public int maxSandRadius;
 
+    // What position to place the hole
+    public int[] holeLocation;
+
 
     /**
      * float Point2PointDistance(int[] p1, int[] p2)
@@ -408,6 +411,26 @@ public class CreateGolfTerrain : MonoBehaviour {
         }
     }
 
+    public void TrimBounds(BoundingBox bounds)
+    {
+        int new_minX = int.MaxValue, new_minY = int.MaxValue, 
+            new_maxX = int.MinValue, new_maxY = int.MinValue;
+
+        for (int y = bounds.y_min; y < bounds.y_max; y++)
+        {
+            for (int x = bounds.x_min; x < bounds.x_max; x++)
+            {
+                if(groundType[x, y] == bounds.type)
+                {
+                    new_minX = Mathf.Min(new_minX, x);
+                    new_minY = Mathf.Min(new_minY, y);
+                    new_maxX = Mathf.Max(new_maxX, x);
+                    new_maxY = Mathf.Max(new_maxX, y);
+                }
+            }
+        }
+    }
+
     /**
      *  void MakeFairway - Set up the fairway based on the given par. If 3, make a large pad. If
      *                          4 || 5, create a chain of circles until required distance is met,
@@ -480,6 +503,7 @@ public class CreateGolfTerrain : MonoBehaviour {
         }
     }
 
+
     /**
      *  void MakeGreen(int[] point, int radius) - Define the bounding box of the green, then fill it
      *              within that boundary.
@@ -496,6 +520,19 @@ public class CreateGolfTerrain : MonoBehaviour {
         greenBox.y_max = point[1] + radius;
 
         MakeBlob(Area.GREEN, greenBox, 9, 2, 6);
+        TrimBounds(greenBox);
+
+        // find the min of width/height 
+        int holeRadius = (Mathf.Min(greenBox.x_max - greenBox.x_min, greenBox.y_max - greenBox.y_min)) / 2;
+        int[] holeCenter = new int[] {(greenBox.x_min + (greenBox.x_max - greenBox.x_min)) / 2,
+                                        (greenBox.y_min + (greenBox.y_max - greenBox.y_min)) / 2 };
+
+        // decide x/y coors inside this circle
+        Vector2 randLocation = holeRadius * Random.insideUnitCircle;
+        print(randLocation);
+
+        // Set int array to the new coordinates
+        holeLocation = new int[] { (int)(randLocation.x + holeCenter[0] * 1.75), (int)(randLocation.y + holeCenter[1] * 1.75) };
     }
 
 
@@ -926,7 +963,7 @@ public class CreateGolfTerrain : MonoBehaviour {
 
     public void MakeNewCourse(int par)
     {
-        Random.InitState(0);
+        //Random.InitState(0);
 
         CreateBorder(3, Area.ASPHAULT);
         MakeFairway(par);
@@ -988,5 +1025,9 @@ public class CreateGolfTerrain : MonoBehaviour {
     public Area[,] getGroundMap()
     {
         return groundType;
+    }
+    public int[] getHoleLocation()
+    {
+        return holeLocation;
     }
 }
